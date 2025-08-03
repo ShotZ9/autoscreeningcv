@@ -62,13 +62,21 @@ if st.button("🚀 Mulai Screening"):
 
         if results:
             df = pd.DataFrame(results)
-            df = df.sort_values(by="Total_Match (%)", ascending=False).reset_index(drop=True)
+
+            # --- Filter Tampilan ---
+            st.markdown("### 📊 Opsi Tampilan Hasil")
+            limit = st.selectbox("Jumlah hasil yang ditampilkan:", [10, 20, 50, 100], index=1)
+            sort_order = st.radio("Urutkan berdasarkan persentase:", ["Descending", "Ascending"], horizontal=True)
+
+            ascending = True if sort_order == "Ascending" else False
+            df = df.sort_values(by="Total_Match (%)", ascending=ascending).reset_index(drop=True)
+            df_display = df.head(limit)
 
             st.success("✅ Screening selesai!")
-            st.dataframe(df)
+            st.dataframe(df_display)
 
-            # Tombol download CSV
+            # Tombol download CSV full
             csv = df.to_csv(index=False).encode('utf-8')
-            st.download_button("📥 Unduh Hasil CSV", data=csv, file_name="hasil_screening.csv", mime="text/csv")
+            st.download_button("📥 Unduh Seluruh Hasil CSV", data=csv, file_name="hasil_screening.csv", mime="text/csv")
         else:
             st.warning("Tidak ada hasil yang dapat ditampilkan.")
