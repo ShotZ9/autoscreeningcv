@@ -12,6 +12,7 @@ st.markdown("Unggah file .pdf atau .docx dan masukkan kata kunci untuk menyaring
 # --- Input Kata Kunci Skrining ---
 keywords_input = st.text_input("🔍 Masukkan kata kunci skrining (pisahkan dengan koma):", "Python, machine learning, SQL")
 keywords = [kw.strip().lower() for kw in keywords_input.split(",") if kw.strip()]
+total_keywords = len(keywords)
 
 # --- Upload File ---
 uploaded_files = st.file_uploader("📤 Unggah file CV (.pdf atau .docx)", type=["pdf", "docx"], accept_multiple_files=True)
@@ -47,20 +48,21 @@ if st.button("🚀 Mulai Screening"):
                     st.warning(f"❌ Format file tidak didukung: {file_name}")
                     continue
 
-                match_counts = {kw: text.count(kw) for kw in keywords}
-                total_match = sum(match_counts.values())
+                binary_matches = {kw: int(kw in text) for kw in keywords}
+                score = sum(binary_matches.values())
+                percentage_match = (score / total_keywords) * 100 if total_keywords else 0
 
                 results.append({
                     "Filename": file_name,
-                    **match_counts,
-                    "Total_Match": total_match
+                    **binary_matches,
+                    "Total_Match (%)": round(percentage_match, 2)
                 })
             except Exception as e:
                 st.error(f"⚠️ Gagal memproses {file_name}: {e}")
 
         if results:
             df = pd.DataFrame(results)
-            df = df.sort_values(by="Total_Match", ascending=False).reset_index(drop=True)
+            df = df.sort_values(by="Total_Match (%)", ascending=False).reset_index(drop=True)
 
             st.success("✅ Screening selesai!")
             st.dataframe(df)
