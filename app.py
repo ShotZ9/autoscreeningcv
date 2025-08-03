@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import PyPDF2
 import docx
-import io
 
 st.set_page_config(page_title="Auto CV Screening", layout="wide")
 
@@ -28,7 +27,7 @@ def extract_text_from_docx(file):
     doc = docx.Document(file)
     return '\n'.join([para.text for para in doc.paragraphs])
 
-# --- Proses Screening ---
+# --- Proses Screening saat tombol ditekan ---
 if st.button("🚀 Mulai Screening"):
     if not uploaded_files or not keywords:
         st.warning("Mohon unggah file dan masukkan kata kunci terlebih dahulu.")
@@ -61,22 +60,25 @@ if st.button("🚀 Mulai Screening"):
                 st.error(f"⚠️ Gagal memproses {file_name}: {e}")
 
         if results:
-            df = pd.DataFrame(results)
-
-            # --- Filter Tampilan ---
-            st.markdown("### 📊 Opsi Tampilan Hasil")
-            limit = st.selectbox("Jumlah hasil yang ditampilkan:", [10, 20, 50, 100], index=1)
-            sort_order = st.radio("Urutkan berdasarkan persentase:", ["Descending", "Ascending"], horizontal=True)
-
-            ascending = True if sort_order == "Ascending" else False
-            df = df.sort_values(by="Total_Match (%)", ascending=ascending).reset_index(drop=True)
-            df_display = df.head(limit)
-
-            st.success("✅ Screening selesai!")
-            st.dataframe(df_display)
-
-            # Tombol download CSV full
-            csv = df.to_csv(index=False).encode('utf-8')
-            st.download_button("📥 Unduh Seluruh Hasil CSV", data=csv, file_name="hasil_screening.csv", mime="text/csv")
+            st.session_state["screening_results"] = pd.DataFrame(results)
         else:
             st.warning("Tidak ada hasil yang dapat ditampilkan.")
+
+# --- Tampilkan hasil jika sudah ada di session_state ---
+if "screening_results" in st.session_state:
+    df = st.session_state["screening_results"]
+
+    st.markdown("### 📊 Opsi Tampilan Hasil")
+    limit = st.selectbox("Jumlah hasil yang ditampilkan:", [10, 20, 50, 100], index=1)
+    sort_order = st.radio("Urutkan berdasarkan persentase:", ["Descending", "Ascending"], horizontal=True)
+
+    ascending = True if sort_order == "Ascending" else False
+    df_sorted = df.sort_values(by="Total_Match (%)", ascending=ascending).reset_index(drop=True)
+    df_display = df_sorted.head(limit)
+
+    st.success("✅ Screening selesai!")
+    st.dataframe(df_display)
+
+    # Tombol download CSV full
+    csv = df.to_csv(index=False).encode('utf-8')
+    st.download_button("📥 Unduh Seluruh Hasil CSV", data=csv, file_name="hasil_screening.csv", mime="text/csv")
