@@ -27,45 +27,46 @@ def extract_text_from_docx(file):
     doc = docx.Document(file)
     return '\n'.join([para.text for para in doc.paragraphs])
 
-# --- Proses File ---
-if st.button("🚀 Mulai Screening") and uploaded_files and keywords:
-    results = []
-
-    for uploaded_file in uploaded_files:
-        file_name = uploaded_file.name
-        ext = file_name.split('.')[-1].lower()
-
-        try:
-            if ext == 'pdf':
-                text = extract_text_from_pdf(uploaded_file).lower()
-            elif ext == 'docx':
-                text = extract_text_from_docx(uploaded_file).lower()
-            else:
-                st.warning(f"❌ Format file tidak didukung: {file_name}")
-                continue
-
-            match_counts = {kw: text.count(kw) for kw in keywords}
-            total_match = sum(match_counts.values())
-
-            results.append({
-                "Filename": file_name,
-                **match_counts,
-                "Total_Match": total_match
-            })
-        except Exception as e:
-            st.error(f"⚠️ Gagal memproses {file_name}: {e}")
-
-    if results:
-        df = pd.DataFrame(results)
-        df = df.sort_values(by="Total_Match", ascending=False).reset_index(drop=True)
-
-        st.success("✅ Screening selesai!")
-        st.dataframe(df)
-
-        # Tombol download CSV
-        csv = df.to_csv(index=False).encode('utf-8')
-        st.download_button("📥 Unduh Hasil CSV", data=csv, file_name="hasil_screening.csv", mime="text/csv")
+# --- Proses Screening ---
+if st.button("🚀 Mulai Screening"):
+    if not uploaded_files or not keywords:
+        st.warning("Mohon unggah file dan masukkan kata kunci terlebih dahulu.")
     else:
-        st.warning("Tidak ada hasil yang dapat ditampilkan.")
-elif st.button("🚀 Mulai Screening"):
-    st.warning("Mohon unggah file dan masukkan kata kunci terlebih dahulu.")
+        results = []
+
+        for uploaded_file in uploaded_files:
+            file_name = uploaded_file.name
+            ext = file_name.split('.')[-1].lower()
+
+            try:
+                if ext == 'pdf':
+                    text = extract_text_from_pdf(uploaded_file).lower()
+                elif ext == 'docx':
+                    text = extract_text_from_docx(uploaded_file).lower()
+                else:
+                    st.warning(f"❌ Format file tidak didukung: {file_name}")
+                    continue
+
+                match_counts = {kw: text.count(kw) for kw in keywords}
+                total_match = sum(match_counts.values())
+
+                results.append({
+                    "Filename": file_name,
+                    **match_counts,
+                    "Total_Match": total_match
+                })
+            except Exception as e:
+                st.error(f"⚠️ Gagal memproses {file_name}: {e}")
+
+        if results:
+            df = pd.DataFrame(results)
+            df = df.sort_values(by="Total_Match", ascending=False).reset_index(drop=True)
+
+            st.success("✅ Screening selesai!")
+            st.dataframe(df)
+
+            # Tombol download CSV
+            csv = df.to_csv(index=False).encode('utf-8')
+            st.download_button("📥 Unduh Hasil CSV", data=csv, file_name="hasil_screening.csv", mime="text/csv")
+        else:
+            st.warning("Tidak ada hasil yang dapat ditampilkan.")
