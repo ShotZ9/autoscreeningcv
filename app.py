@@ -62,8 +62,10 @@ def guess_gender_from_name(name):
 def extract_attributes(text, raw_text):
     attributes = {}
 
-    gpa_match = re.search(r"gpa[:\\s]*([3-4]\\.\\d{1,2})", text)
-    attributes["GPA"] = float(gpa_match.group(1)) if gpa_match else None
+    # --- GPA ---
+    gpa_match = re.search(r"gpa\s*[:=]?\s*([0-4][\.,]?\d{1,2})", text)
+    gpa_raw = gpa_match.group(1).replace(",", ".") if gpa_match else None
+    attributes["GPA"] = float(gpa_raw) if gpa_raw else None
 
     if "male" in text:
         attributes["Gender"] = "Male"
