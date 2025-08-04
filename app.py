@@ -63,30 +63,36 @@ def extract_attributes(text, raw_text):
     attributes = {}
 
     # --- GPA ---
-    gpa_match = re.search(r"gpa\s*[:=]?\s*([0-4][\.,]?\d{1,2})\s*/\s*[0-4](\.\d{1,2})?", text, re.IGNORECASE)
+    gpa_match = re.search(r"GPA\s*[:=]?\s*([0-4][\.,]?\d{1,2})\s*/\s*[0-4](\.\d{1,2})?", text, re.IGNORECASE)
     gpa_raw = gpa_match.group(1).replace(",", ".") if gpa_match else None
     attributes["GPA"] = float(gpa_raw) if gpa_raw else None
 
+    # --- Gender ---
     if "male" in text:
         attributes["Gender"] = "Male"
     elif "female" in text:
         attributes["Gender"] = "Female"
     else:
-        name_match = re.search(r"^([A-Z][a-z]+(?:\\s[A-Z][a-z]+)*)", raw_text)
-        name = name_match.group(1) if name_match else "Unknown"
-        attributes["Gender"] = guess_gender_from_name(name)
+        first_name = raw_text.strip().split()[0]
+        attributes["Gender"] = guess_gender_from_name(first_name)
 
+    # --- Religion ---
+    found = False
     for religion in ["islam", "christian", "catholic", "buddhist", "hindu"]:
-        if religion in text:
+        if religion in text.lower():
             attributes["Religion"] = religion.capitalize()
+            found = True
             break
-    else:
-        attributes["Religion"] = "Unknown"
+    if not found:
+        first_name = raw_text.strip().split()[0].lower()
+        if first_name.startswith(("muhammad", "mohammad", "ahmad", "abdul")):
+            attributes["Religion"] = "Islam"
+        else:
+            attributes["Religion"] = "Unknown"
 
     # Load daftar kota dari file eksternal
     with open("indonesia_cities.txt", "r", encoding="utf-8") as f:
         city_list = [line.strip().lower() for line in f.readlines() if line.strip()]
-
     city_found = "Unknown"
     for city in city_list:
         if city in text:
