@@ -49,7 +49,7 @@ def simulate_translate(text):
 
 def guess_gender_from_name(name):
     name = name.lower()
-    emale_names = [
+    female_names = [
         "ayu", "sari", "dwi", "lisa", "ratna", "indah", "mega", "citra", "wulan", "desi", "nia", "fitri", "tari"
     ]
     male_names = [
