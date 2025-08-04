@@ -4,13 +4,14 @@ import PyPDF2
 import docx
 import re
 from datetime import datetime
+from dateutil import parser as dateparser
 
 st.set_page_config(page_title="Auto CV Screening", layout="wide")
 
 st.title("📄 Auto CV Screening App")
-st.markdown("Unggah file .pdf atau .docx dan pilih jobdesc untuk menyaring CV kandidat. Ekstraksi otomatis meliputi GPA, tanggal lahir, gender, agama, dan kota.")
+st.markdown("Unggah file .pdf atau .docx dan pilih jobdesc untuk menyaring CV kandidat. Ekstraksi otomatis: GPA, tanggal lahir, gender, agama, dan kota.")
 
-TODAY = datetime(2025, 8, 4)
+TODAY = datetime.today()
 
 # --- Jobdesc Selector ---
 jobdesc_option = st.selectbox("💼 Pilih Posisi yang Dicari", ["Frontend (FE)", "Backend (BE)", "UI/UX", "Machine Learning (ML)"])
@@ -35,16 +36,29 @@ def extract_text_from_pdf(file):
 
 def extract_text_from_docx(file):
     doc = docx.Document(file)
-    return '\n'.join([para.text for para in doc.paragraphs])
+    return '\\n'.join([para.text for para in doc.paragraphs])
 
 def simulate_translate(text):
     return text.replace("ipk", "gpa").replace("laki-laki", "male").replace("perempuan", "female") \
                .replace("islam", "islam").replace("kristen", "christian").replace("katolik", "catholic") \
-               .replace("buddha", "buddhist").replace("hindu", "hindu").replace(",", " ").replace(":", " ")
+               .replace("buddha", "buddhist").replace("hindu", "hindu")
 
-def extract_attributes(text):
+def guess_gender_from_name(name):
+    name = name.lower()
+    female_hint = ["ayu", "nia", "sari", "dwi", "wati"]
+    male_hint = ["yoel", "agus", "budi", "adi", "joko", "tono"]
+    for w in female_hint:
+        if w in name:
+            return "Female"
+    for m in male_hint:
+        if m in name:
+            return "Male"
+    return "Unknown"
+
+def extract_attributes(text, raw_text, input_city):
     attributes = {}
-    gpa_match = re.search(r"gpa\s*[:=\-]?\s*(\d\.\d+)", text)
+
+    gpa_match = re.search(r"gpa[:\\s]*([3-4]\\.\\d{1,2})", text)
     attributes["GPA"] = float(gpa_match.group(1)) if gpa_match else None
 
     if "male" in text:
@@ -52,7 +66,9 @@ def extract_attributes(text):
     elif "female" in text:
         attributes["Gender"] = "Female"
     else:
-        attributes["Gender"] = "Unknown"
+        name_match = re.search(r"^([A-Z][a-z]+(?:\\s[A-Z][a-z]+)*)", raw_text)
+        name = name_match.group(1) if name_match else "Unknown"
+        attributes["Gender"] = guess_gender_from_name(name)
 
     for religion in ["islam", "christian", "catholic", "buddhist", "hindu"]:
         if religion in text:
@@ -61,15 +77,24 @@ def extract_attributes(text):
     else:
         attributes["Religion"] = "Unknown"
 
-    city_match = re.search(r"(malang|jakarta|surabaya|bandung|yogyakarta|semarang|bali|east java)", text, re.IGNORECASE)
-    attributes["City"] = city_match.group(1).title() if city_match else "Unknown"
+    attributes["City"] = input_city.title() if input_city else "Unknown"
 
-    birth_date = datetime(2004, 12, 21)  # hardcoded
-    age = TODAY.year - birth_date.year - ((TODAY.month, TODAY.day) < (birth_date.month, birth_date.day))
-    birth_str = birth_date.strftime("%-d %B %Y")
-    attributes["Birth"] = f"{birth_str} ({age} Tahun)"
+    search_area = raw_text.lower().split("about me")[0] if "about me" in raw_text.lower() else raw_text[:500]
+    date_match = re.search(r"(born|lahir)[^\\d]*(\\d{1,2}[^\\d\\w]?\\s?[a-zA-Z]+[^\\d\\w]?\\s?\\d{4})", search_area)
+    if date_match:
+        try:
+            bdate = dateparser.parse(date_match.group(2), languages=["id", "en"])
+            age = TODAY.year - bdate.year - ((TODAY.month, TODAY.day) < (bdate.month, bdate.day))
+            attributes["Birth"] = f"{bdate.strftime('%-d %B %Y')} ({age} Tahun)"
+        except:
+            attributes["Birth"] = "Format tanggal tidak dikenali"
+    else:
+        attributes["Birth"] = "Tidak ditemukan"
 
     return attributes
+
+# --- Input Kota Manual ---
+input_city = st.text_input("📍 Filter asal kota:", "")
 
 # --- Screening ---
 if st.button("🚀 Mulai Screening"):
@@ -83,18 +108,18 @@ if st.button("🚀 Mulai Screening"):
 
             try:
                 if ext == 'pdf':
-                    text = extract_text_from_pdf(uploaded_file).lower()
+                    raw_text = extract_text_from_pdf(uploaded_file)
                 elif ext == 'docx':
-                    text = extract_text_from_docx(uploaded_file).lower()
+                    raw_text = extract_text_from_docx(uploaded_file)
                 else:
                     st.warning(f"❌ Format file tidak didukung: {file_name}")
                     continue
 
-                text_en = simulate_translate(text)
-                binary_matches = {kw: int(kw in text_en) for kw in keywords}
+                text = simulate_translate(raw_text.lower())
+                binary_matches = {kw: int(kw in text) for kw in keywords}
                 score = sum(binary_matches.values())
                 percentage_match = (score / total_keywords) * 100 if total_keywords else 0
-                attrs = extract_attributes(text_en)
+                attrs = extract_attributes(text, raw_text, input_city)
 
                 results.append({
                     "Filename": file_name,
@@ -110,7 +135,7 @@ if st.button("🚀 Mulai Screening"):
         else:
             st.warning("Tidak ada hasil yang dapat ditampilkan.")
 
-# --- Display Results ---
+# --- Display ---
 if "screening_results" in st.session_state:
     df = st.session_state["screening_results"]
     st.markdown("### 📊 Opsi Tampilan Hasil")
