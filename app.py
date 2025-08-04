@@ -133,8 +133,8 @@ if st.button("🚀 Mulai Screening"):
     else:
         results = []
         if total_keywords == 0:
-        st.error("❌ Tidak ada keyword yang terdeteksi untuk posisi yang dipilih.")
-        st.stop()
+            st.error("❌ Tidak ada keyword yang terdeteksi untuk posisi yang dipilih.")
+            st.stop()
 
         for uploaded_file in uploaded_files:
             file_name = uploaded_file.name
