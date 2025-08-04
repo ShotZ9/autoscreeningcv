@@ -133,7 +133,7 @@ if st.button("🚀 Mulai Screening"):
                     st.warning(f"❌ Format file tidak didukung: {file_name}")
                     continue
 
-                text = simulate_translate(raw_text)
+                text = simulate_translate(raw_text.lower())
                 binary_matches = {kw: int(kw in text) for kw in keywords}
                 score = sum(binary_matches.values())
                 percentage_match = (score / total_keywords) * 100 if total_keywords else 0
