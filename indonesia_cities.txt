@@ -1,21 +1,104 @@
-Jakarta
-Surabaya
-Bandung
-Bekasi
-Depok
-Tangerang
-Semarang
-Yogyakarta
-Malang
-Denpasar
+Banda Aceh
+Langsa
+Lhokseumawe
+Meulaboh
+Sabang
+Subulussalam
+Binjai
+Gunungsitoli
 Medan
-Makassar
-Solo
-Pontianak
-Balikpapan
-Batam
-Pekanbaru
+Padang Sidempuan
+Pematangsiantar
+Sibolga
+Tanjungbalai
+Tebingtinggi
+Bukittinggi
 Padang
-Banjarmasin
-Cimahi
+Padangpanjang
+Pariaman
+Payakumbuh
+Sawahlunto
+Solok
+Dumai
+Pekanbaru
+Jambi
+Sungai Penuh
+Lubuklinggau
+Pagaralam
+Palembang
+Prabumulih
+Bengkulu
+Bandar Lampung
+Metro
+Batam
+Tanjungpinang
+Pangkalpinang
+Cilegon
+Serang
+Tangerang
+Tangerang Selatan
+Jakarta
+Jakarta Barat
+Jakarta Pusat
+Jakarta Selatan
+Jakarta Timur
+Jakarta Utara
+Bandung
+Banjar
+Bekasi
 Bogor
+Cimahi
+Cirebon
+Depok
+Sukabumi
+Tasikmalaya
+Magelang
+Pekalongan
+Purwokerto
+Salatiga
+Semarang
+Surakarta
+Tegal
+Yogyakarta
+Sleman
+Bantul
+Batu
+Blitar
+Kediri
+Madiun
+Malang
+Mojokerto
+Pasuruan
+Probolinggo
+Surabaya
+Denpasar
+Bali
+Bima
+Mataram
+Kupang
+Pontianak
+Singkawang
+Palangkaraya
+Banjarbaru
+Banjarmasin
+Balikpapan
+Bontang
+Samarinda
+Tarakan
+Bitung
+Kotamobagu
+Manado
+Tomohon
+Gorontalo
+Palu
+Makassar
+Palopo
+Parepare
+Bau-Bau
+Kendari
+Ambon
+Tual
+Ternate
+Tidore Kepulauan
+Sorong
+Jayapura
