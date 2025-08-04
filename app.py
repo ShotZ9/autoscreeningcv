@@ -11,7 +11,7 @@ st.set_page_config(page_title="Auto CV Screening", layout="wide")
 st.title("📄 Auto CV Screening App")
 st.markdown("Unggah file .pdf atau .docx dan pilih jobdesc untuk menyaring CV kandidat. Ekstraksi otomatis: GPA, tanggal lahir, gender, agama, dan kota.")
 
-TODAY = datetime.today()
+TODAY = datetime(2025, 8, 4)
 
 # --- Jobdesc Selector ---
 jobdesc_option = st.selectbox("💼 Pilih Posisi yang Dicari", ["Frontend (FE)", "Backend (BE)", "UI/UX", "Machine Learning (ML)"])
@@ -23,6 +23,9 @@ jobdesc_keywords_map = {
 }
 keywords = jobdesc_keywords_map[jobdesc_option]
 total_keywords = len(keywords)
+
+# --- Daftar kota Indonesia sederhana (bisa pakai file lebih besar)
+indonesia_cities = ["malang", "jakarta", "surabaya", "bandung", "yogyakarta", "semarang", "denpasar", "makassar", "medan", "balikpapan", "batam", "solo", "pontianak", "padang", "pekanbaru", "bogor", "tangerang", "bekasi", "depok", "bali"]
 
 # --- Upload File ---
 uploaded_files = st.file_uploader("📤 Unggah file CV (.pdf atau .docx)", type=["pdf", "docx"], accept_multiple_files=True)
@@ -55,12 +58,14 @@ def guess_gender_from_name(name):
             return "Male"
     return "Unknown"
 
-def extract_attributes(text, raw_text, input_city):
+def extract_attributes(text, raw_text):
     attributes = {}
 
+    # --- GPA presisi ---
     gpa_match = re.search(r"gpa[:\\s]*([3-4]\\.\\d{1,2})", text)
     attributes["GPA"] = float(gpa_match.group(1)) if gpa_match else None
 
+    # --- Gender estimation by text or fallback to name ---
     if "male" in text:
         attributes["Gender"] = "Male"
     elif "female" in text:
@@ -70,6 +75,7 @@ def extract_attributes(text, raw_text, input_city):
         name = name_match.group(1) if name_match else "Unknown"
         attributes["Gender"] = guess_gender_from_name(name)
 
+    # --- Religion ---
     for religion in ["islam", "christian", "catholic", "buddhist", "hindu"]:
         if religion in text:
             attributes["Religion"] = religion.capitalize()
@@ -77,8 +83,15 @@ def extract_attributes(text, raw_text, input_city):
     else:
         attributes["Religion"] = "Unknown"
 
-    attributes["City"] = input_city.title() if input_city else "Unknown"
+    # --- City from raw text ---
+    city_found = "Unknown"
+    for city in indonesia_cities:
+        if city in text:
+            city_found = city.title()
+            break
+    attributes["City"] = city_found
 
+    # --- Birth date parsing (from first part only) ---
     search_area = raw_text.lower().split("about me")[0] if "about me" in raw_text.lower() else raw_text[:500]
     date_match = re.search(r"(born|lahir)[^\\d]*(\\d{1,2}[^\\d\\w]?\\s?[a-zA-Z]+[^\\d\\w]?\\s?\\d{4})", search_area)
     if date_match:
@@ -92,9 +105,6 @@ def extract_attributes(text, raw_text, input_city):
         attributes["Birth"] = "Tidak ditemukan"
 
     return attributes
-
-# --- Input Kota Manual ---
-input_city = st.text_input("📍 Filter asal kota:", "")
 
 # --- Screening ---
 if st.button("🚀 Mulai Screening"):
@@ -116,10 +126,12 @@ if st.button("🚀 Mulai Screening"):
                     continue
 
                 text = simulate_translate(raw_text.lower())
+
+                # Screening
                 binary_matches = {kw: int(kw in text) for kw in keywords}
                 score = sum(binary_matches.values())
                 percentage_match = (score / total_keywords) * 100 if total_keywords else 0
-                attrs = extract_attributes(text, raw_text, input_city)
+                attrs = extract_attributes(text, raw_text)
 
                 results.append({
                     "Filename": file_name,
