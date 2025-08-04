@@ -137,15 +137,11 @@ if st.button("🚀 Mulai Screening"):
                     st.warning(f"❌ Format file tidak didukung: {file_name}")
                     continue
 
-                # Pencocokan keyword pakai lowercase
-                text_for_matching = simulate_translate(raw_text.lower())
-                # Ekstraksi atribut pakai teks asli agar format GPA tetap terjaga
-                text_for_extraction = simulate_translate(raw_text)
-
-                binary_matches = {kw: int(kw in text_for_matching) for kw in keywords}
+                text = simulate_translate(raw_text.lower())
+                binary_matches = {kw: int(kw in text) for kw in keywords}
                 score = sum(binary_matches.values())
                 percentage_match = (score / total_keywords) * 100 if total_keywords else 0
-                attrs = extract_attributes(text_for_extraction, raw_text)
+                attrs = extract_attributes(text, raw_text)
 
                 results.append({
                     "Filename": file_name,
