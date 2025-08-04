@@ -132,6 +132,10 @@ if st.button("🚀 Mulai Screening"):
         st.warning("Mohon unggah file terlebih dahulu.")
     else:
         results = []
+        if total_keywords == 0:
+        st.error("❌ Tidak ada keyword yang terdeteksi untuk posisi yang dipilih.")
+        st.stop()
+
         for uploaded_file in uploaded_files:
             file_name = uploaded_file.name
             ext = file_name.split('.')[-1].lower()
