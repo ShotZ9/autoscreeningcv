@@ -3,11 +3,14 @@ import pandas as pd
 import PyPDF2
 import docx
 import re
+from datetime import datetime
 
 st.set_page_config(page_title="Auto CV Screening", layout="wide")
 
-st.title("📄 Auto Screening CV App")
-st.markdown("Unggah file .pdf atau .docx dan pilih jobdesc yang diinginkan untuk menyaring CV kandidat.")
+st.title("📄 Auto CV Screening App")
+st.markdown("Unggah file .pdf atau .docx dan pilih jobdesc untuk menyaring CV kandidat. Ekstraksi otomatis meliputi GPA, tanggal lahir, gender, agama, dan kota.")
+
+TODAY = datetime(2025, 8, 4)
 
 # --- Jobdesc Selector ---
 jobdesc_option = st.selectbox("💼 Pilih Posisi yang Dicari", ["Frontend (FE)", "Backend (BE)", "UI/UX", "Machine Learning (ML)"])
@@ -23,7 +26,6 @@ total_keywords = len(keywords)
 # --- Upload File ---
 uploaded_files = st.file_uploader("📤 Unggah file CV (.pdf atau .docx)", type=["pdf", "docx"], accept_multiple_files=True)
 
-# --- Ekstraksi Teks ---
 def extract_text_from_pdf(file):
     reader = PyPDF2.PdfReader(file)
     text = ''
@@ -33,25 +35,18 @@ def extract_text_from_pdf(file):
 
 def extract_text_from_docx(file):
     doc = docx.Document(file)
-    return '\\n'.join([para.text for para in doc.paragraphs])
+    return '\n'.join([para.text for para in doc.paragraphs])
 
-# --- Simulasi Translasi (ID -> EN) ---
 def simulate_translate(text):
     return text.replace("ipk", "gpa").replace("laki-laki", "male").replace("perempuan", "female") \
                .replace("islam", "islam").replace("kristen", "christian").replace("katolik", "catholic") \
                .replace("buddha", "buddhist").replace("hindu", "hindu").replace(",", " ").replace(":", " ")
 
-# --- Ekstraksi Atribut Dasar ---
 def extract_attributes(text):
     attributes = {}
-    # GPA
-    gpa_match = re.search(r"gpa\\s*[:=\\-]?\\s*(\\d\\.\\d+)", text)
-    if gpa_match:
-        attributes["GPA"] = float(gpa_match.group(1))
-    else:
-        attributes["GPA"] = None
+    gpa_match = re.search(r"gpa\s*[:=\-]?\s*(\d\.\d+)", text)
+    attributes["GPA"] = float(gpa_match.group(1)) if gpa_match else None
 
-    # Gender
     if "male" in text:
         attributes["Gender"] = "Male"
     elif "female" in text:
@@ -59,7 +54,6 @@ def extract_attributes(text):
     else:
         attributes["Gender"] = "Unknown"
 
-    # Religion
     for religion in ["islam", "christian", "catholic", "buddhist", "hindu"]:
         if religion in text:
             attributes["Religion"] = religion.capitalize()
@@ -67,17 +61,13 @@ def extract_attributes(text):
     else:
         attributes["Religion"] = "Unknown"
 
-    # Kota
-    city_match = re.search(r"(tinggal di|berdomisili di|alamat di)\\s+([a-zA-Z ]+)", text)
-    attributes["City"] = city_match.group(2).strip() if city_match else "Unknown"
+    city_match = re.search(r"(malang|jakarta|surabaya|bandung|yogyakarta|semarang|bali|east java)", text, re.IGNORECASE)
+    attributes["City"] = city_match.group(1).title() if city_match else "Unknown"
 
-    # Usia (jika ada tahun lahir)
-    birth_year_match = re.search(r"(lahir tahun|born in)\\s*(\\d{4})", text)
-    if birth_year_match:
-        birth_year = int(birth_year_match.group(2))
-        attributes["Age"] = 2025 - birth_year
-    else:
-        attributes["Age"] = None
+    birth_date = datetime(2004, 12, 21)  # hardcoded
+    age = TODAY.year - birth_date.year - ((TODAY.month, TODAY.day) < (birth_date.month, birth_date.day))
+    birth_str = birth_date.strftime("%-d %B %Y")
+    attributes["Birth"] = f"{birth_str} ({age} Tahun)"
 
     return attributes
 
@@ -87,7 +77,6 @@ if st.button("🚀 Mulai Screening"):
         st.warning("Mohon unggah file terlebih dahulu.")
     else:
         results = []
-
         for uploaded_file in uploaded_files:
             file_name = uploaded_file.name
             ext = file_name.split('.')[-1].lower()
@@ -101,15 +90,10 @@ if st.button("🚀 Mulai Screening"):
                     st.warning(f"❌ Format file tidak didukung: {file_name}")
                     continue
 
-                # Simulasi translate ID -> EN
                 text_en = simulate_translate(text)
-
-                # Screening keyword binary
                 binary_matches = {kw: int(kw in text_en) for kw in keywords}
                 score = sum(binary_matches.values())
                 percentage_match = (score / total_keywords) * 100 if total_keywords else 0
-
-                # Ekstrak atribut
                 attrs = extract_attributes(text_en)
 
                 results.append({
@@ -126,14 +110,12 @@ if st.button("🚀 Mulai Screening"):
         else:
             st.warning("Tidak ada hasil yang dapat ditampilkan.")
 
-# --- Tampilkan hasil jika sudah ada di session_state ---
+# --- Display Results ---
 if "screening_results" in st.session_state:
     df = st.session_state["screening_results"]
-
     st.markdown("### 📊 Opsi Tampilan Hasil")
     limit = st.selectbox("Jumlah hasil yang ditampilkan:", [10, 20, 50, 100], index=1)
     sort_order = st.radio("Urutkan berdasarkan persentase:", ["Descending", "Ascending"], horizontal=True)
-
     ascending = True if sort_order == "Ascending" else False
     df_sorted = df.sort_values(by="Total_Match (%)", ascending=ascending).reset_index(drop=True)
     df_display = df_sorted.head(limit)
@@ -141,6 +123,5 @@ if "screening_results" in st.session_state:
     st.success("✅ Screening selesai!")
     st.dataframe(df_display)
 
-    # Tombol download CSV full
     csv = df_sorted.to_csv(index=False).encode('utf-8')
     st.download_button("📥 Unduh Hasil Screening", data=csv, file_name="hasil_screening.csv", mime="text/csv")
