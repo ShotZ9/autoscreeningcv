@@ -65,7 +65,7 @@ def extract_attributes(text, raw_text):
     # --- GPA ---
     gpa_match = re.search(r"(?:gpa|ipk)[\s:]*([0-4](?:[\.,]\d{1,2})?)(?:\s*/\s*[0-4](?:[\.,]\d{1,2})?)?", text, re.IGNORECASE)
     gpa_raw = gpa_match.group(1).replace(",", ".") if gpa_match else None
-    attributes["GPA"] = float(gpa_raw) if gpa_raw else None
+    attributes["GPA"] = round(float(gpa_raw), 2) if gpa_raw else None
 
     # --- Gender ---
     if "male" in text:
