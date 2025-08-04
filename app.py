@@ -83,8 +83,16 @@ def extract_attributes(text, raw_text):
     else:
         attributes["Religion"] = "Unknown"
 
-    city_match = re.search(r"(malang|jakarta|surabaya|bandung|yogyakarta|semarang|denpasar|makassar|medan|solo|bali)", text)
-    attributes["City"] = city_match.group(1).title() if city_match else "Unknown"
+    # Load daftar kota dari file eksternal
+    with open("indonesia_cities.txt", "r", encoding="utf-8") as f:
+        city_list = [line.strip().lower() for line in f.readlines() if line.strip()]
+
+    city_found = "Unknown"
+    for city in city_list:
+        if city in text:
+            city_found = city.title()
+            break
+    attributes["City"] = city_found
 
     search_area = raw_text.lower().split("about me")[0] if "about me" in raw_text.lower() else raw_text[:500]
     date_match = re.search(r"(born|lahir)[^\\d]*(\\d{1,2}[^\\d\\w]?\\s?[a-zA-Z]+[^\\d\\w]?\\s?\\d{4})", search_area)
