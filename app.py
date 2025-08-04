@@ -3,6 +3,7 @@ import pandas as pd
 import PyPDF2
 import docx
 import re
+import unicodedata
 from datetime import datetime
 from dateutil import parser as dateparser
 
@@ -41,6 +42,9 @@ def extract_text_from_pdf(file):
 def extract_text_from_docx(file):
     doc = docx.Document(file)
     return '\\n'.join([para.text for para in doc.paragraphs])
+
+def normalize_text(text):
+    return unicodedata.normalize("NFKC", text)
 
 def simulate_translate(text):
     return text.replace("ipk", "gpa").replace("laki-laki", "male").replace("perempuan", "female") \
@@ -137,7 +141,8 @@ if st.button("🚀 Mulai Screening"):
                     st.warning(f"❌ Format file tidak didukung: {file_name}")
                     continue
 
-                text = simulate_translate(raw_text.lower())
+                # text = simulate_translate(raw_text.lower())
+                text = normalize_text(simulate_translate(raw_text.lower()))
                 binary_matches = {kw: int(kw in text) for kw in keywords}
                 score = sum(binary_matches.values())
                 percentage_match = (score / total_keywords) * 100 if total_keywords else 0
