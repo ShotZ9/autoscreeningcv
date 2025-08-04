@@ -143,7 +143,11 @@ if st.button("🚀 Mulai Screening"):
                 st.error(f"⚠️ Gagal memproses {file_name}: {e}")
 
         if results:
-            st.session_state["screening_results"] = pd.DataFrame(results)
+            df = pd.DataFrame(results)
+            keyword_columns = [kw for kw in keywords if kw in df.columns]
+            for col in keyword_columns:
+                df[col] = df[col].map({1: "Yes", 0: "No"})
+            st.session_state["screening_results"] = df
         else:
             st.warning("Tidak ada hasil yang dapat ditampilkan.")
 
