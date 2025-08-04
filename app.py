@@ -49,15 +49,27 @@ def simulate_translate(text):
 
 def guess_gender_from_name(name):
     name = name.lower()
-    female_hint = ["ayu", "nia", "sari", "dwi", "wati"]
-    male_hint = ["yoel", "agus", "budi", "adi", "joko", "tono"]
-    for w in female_hint:
-        if w in name:
-            return "Female"
-    for m in male_hint:
-        if m in name:
-            return "Male"
-    return "Unknown"
+    emale_names = [
+        "ayu", "sari", "dwi", "lisa", "ratna", "indah", "mega", "citra", "wulan", "desi", "nia", "fitri", "tari"
+    ]
+    male_names = [
+        "agus", "budi", "joko", "toni", "andri", "fajar", "adi", "rio", "reza", "dani", "hendra", "arif", "yoel"
+    ]
+    # Cek kemiripan kasar
+    matches_female = sum(1 for fname in female_names if fname in name)
+    matches_male = sum(1 for mname in male_names if mname in name)
+
+    total = matches_female + matches_male
+
+    confidence_female = (matches_female / total) * 100
+    confidence_male = (matches_male / total) * 100
+
+    if confidence_female >= 75:
+        return "Female"
+    elif confidence_male >= 75:
+        return "Male"
+    else:
+        return "Unknown"
 
 def extract_attributes(text, raw_text):
     attributes = {}
