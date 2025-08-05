@@ -1,0 +1,14 @@
+{
+  "nama": "Yoel Amadeo",
+  "gender": "Laki-laki",
+  "tempat_lahir": "Jakarta",
+  "tanggal_lahir": "31-12-2010",
+  "domisili": "Malang",
+  "universitas": "Brawijaya",
+  "jurusan": "Teknik Informatika",
+  "email": "yamadeo9@gmail.com",
+  "no_telp": "081213882822",
+  "gpa": "3.78",
+  "jobdesc": "Machine Learning (ML)",
+  "cv_filename": "yoel-cv.pdf"
+}

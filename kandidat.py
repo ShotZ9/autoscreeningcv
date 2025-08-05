@@ -1,8 +1,13 @@
 import streamlit as st
 from datetime import datetime
+import os
+import json
+import uuid
 
 # --- Form Input Manual ---
-st.subheader("🧾 Formulir Data Kandidat")
+st.set_page_config(page_title="Formulir Kandidat", layout="centered")
+st.title("🧾 Formulir Data Kandidat")
+
 with st.form("form_data"):
     col1, col2 = st.columns(2)
     with col1:
@@ -24,38 +29,31 @@ with st.form("form_data"):
         phone = st.text_input("No. Telepon")
         gpa = st.text_input("GPA")
 
-    
-    # --- Pilih Jobdesc Setelah Upload CV ---
+    # --- Pilih Jobdesc ---
     jobdesc_option = st.selectbox("💼 Pilih Posisi yang Dituju", [
         "Frontend (FE)", "Backend (BE)", "UI/UX", "Machine Learning (ML)"
     ])
-    jobdesc_keywords_map = {
-        "Frontend (FE)": ["javascript", "react", "vue", "next", "frontend"],
-        "Backend (BE)": ["golang", "sql", "rest api", "backend", "nodejs"],
-        "UI/UX": ["figma", "prototyping", "wireframe", "mockup"],
-        "Machine Learning (ML)": ["python", "machine learning", "tensorflow", "sklearn", "model"]
-    }
-    keywords = jobdesc_keywords_map[jobdesc_option]
 
     uploaded_cv = st.file_uploader("📤 Unggah CV (.pdf atau .docx)", type=["pdf", "docx"])
     submitted = st.form_submit_button("🚀 Submit dan Kirim ke Backend")
 
-# --- Simpan dan kirim ke server backend (simulasi upload saja) ---
+# --- Simpan dan kirim ke server backend ---
 if submitted:
     if not all([name, gender, birth_place, birth_date, current_city, university, major, email, phone, gpa, uploaded_cv]):
         st.warning("⚠️ Harap isi seluruh form dan unggah CV.")
     else:
-        # Simpan file ke folder server backend (simulasi)
-        file_path = f"./uploads/{uploaded_cv.name}"
-        with open(file_path, "wb") as f:
+        # Generate folder unik untuk kandidat
+        folder_id = f"{name.strip().lower().replace(' ', '_')}_{str(uuid.uuid4())[:8]}"
+        save_dir = os.path.join("kandidat_data", folder_id)
+        os.makedirs(save_dir, exist_ok=True)
+
+        # Simpan CV
+        cv_path = os.path.join(save_dir, uploaded_cv.name)
+        with open(cv_path, "wb") as f:
             f.write(uploaded_cv.getbuffer())
 
-        # Simulasi kirim data ke backend (bisa pakai requests.post jika ada API)
-        st.success("✅ Data berhasil disimpan dan CV telah dikirim ke server backend.")
-
-        # Tampilkan resume singkat
-        st.markdown("### 📋 Ringkasan Data yang Dikirim")
-        st.json({
+        # Simpan data ke JSON
+        data = {
             "nama": name,
             "gender": gender,
             "tempat_lahir": birth_place,
@@ -67,9 +65,18 @@ if submitted:
             "no_telp": phone,
             "gpa": gpa,
             "jobdesc": jobdesc_option,
-            "keywords": keywords,
             "cv_filename": uploaded_cv.name
-        })
+        }
+
+        json_path = os.path.join(save_dir, "data.json")
+        with open(json_path, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+
+        st.success("✅ Data berhasil disimpan dan CV telah dikirim ke backend.")
+
+        # Tampilkan ringkasan
+        st.markdown("### 📋 Ringkasan Data yang Dikirim")
+        st.json(data)
 
 # --- Disclaimer ---
 st.markdown("---")
