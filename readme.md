@@ -1,7 +1,3 @@
-Berikut adalah **workflow lengkap** sistem **Screening CV Kandidat** berbasis `Streamlit` yang melibatkan dua komponen utama: `kandidat.py` dan `admin.py`.
-
----
-
 ## 🔁 **Alur Kerja (Workflow) Sistem Screening CV**
 
 ---
@@ -104,7 +100,7 @@ Data + CV disimpan di:
 
 ---
 
-## 🛠️ Tips Pengembangan Selanjutnya
+## 🛠️ Pengembangan Selanjutnya
 
 * 🔐 Tambahkan validasi email/no. telp dengan regex.
 * 📩 Notifikasi email otomatis setelah submit (opsional).
@@ -112,11 +108,6 @@ Data + CV disimpan di:
 * 📦 Tambahkan opsi **arsip/tolak** kandidat agar tidak ditampilkan lagi.
 
 ---
-
-Kalau kamu mau, aku bisa bantu:
-
-* Auto-zip proyek ini jadi 1 folder.
-* Export jadi multi-page Streamlit app (`Home`, `Kandidat`, `Admin`).
 * Hosting di Streamlit Cloud / Hugging Face.
 
 Tinggal bilang saja ya, Yoel.
