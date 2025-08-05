@@ -14,7 +14,7 @@ BASE_DIR = "kandidat_data"
 jobdesc_keywords_map = {
     "Frontend (FE)": ["javascript", "react", "vue", "next", "frontend"],
     "Backend (BE)": ["golang", "sql", "rest api", "backend", "nodejs"],
-    "UI/UX": ["figma", "prototyping", "wireframe", "mockup"],
+    "UI/UX": ["figma", "prototyping", "wireframe", "mockup", "adobe"],
     "Machine Learning (ML)": ["python", "machine learning", "tensorflow", "sklearn", "model"]
 }
 
@@ -98,6 +98,9 @@ if results:
         unique_jobs = sorted(df["Jobdesc"].dropna().unique())
         selected_job = col3.selectbox("Jobdesc", ["Semua"] + unique_jobs) if unique_jobs else "Semua"
 
+        # Filter Match % minimal
+        match_threshold = st.slider("Minimum Total Match (%)", min_value=0, max_value=100, value=0, step=5)
+
     # --- Sorting ---
     sort_order = st.radio("Urutkan berdasarkan Match (%)", ["Descending", "Ascending"], horizontal=True)
     ascending = True if sort_order == "Ascending" else False
@@ -112,6 +115,7 @@ if results:
     if selected_job != "Semua":
         filtered_df = filtered_df[filtered_df["Jobdesc"] == selected_job]
 
+    filtered_df = filtered_df[filtered_df["Total_Match (%)"] >= match_threshold]
     filtered_df = filtered_df.sort_values(by="Total_Match (%)", ascending=ascending).reset_index(drop=True)
 
     # --- Tampilkan tabel + tombol unduh
