@@ -108,6 +108,3 @@ Data + CV disimpan di:
 * 📦 Tambahkan opsi **arsip/tolak** kandidat agar tidak ditampilkan lagi.
 
 ---
-* Hosting di Streamlit Cloud / Hugging Face.
-
-Tinggal bilang saja ya, Yoel.
