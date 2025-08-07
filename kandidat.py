@@ -27,7 +27,7 @@ with st.form("form_data"):
         major = st.text_input("Jurusan")
         email = st.text_input("Email")
         phone = st.text_input("No. Telepon")
-        gpa = st.text_input("GPA")
+        gpa = st.number_input("GPA", min_value=0.00, max_value=4.00, step=0.01, format="%.2f")
 
     # --- Pilih Jobdesc ---
     jobdesc_option = st.selectbox("💼 Pilih Posisi yang Dituju", [
@@ -39,8 +39,15 @@ with st.form("form_data"):
 
 # --- Simpan dan kirim ke server backend ---
 if submitted:
+    valid_domains = ["@gmail.com", "@yahoo.com", "@outlook.com"]
+    email_valid = any(email.endswith(domain) for domain in valid_domains)
+
     if not all([name, gender, birth_place, birth_date, current_city, university, major, email, phone, gpa, uploaded_cv]):
         st.warning("⚠️ Harap isi seluruh form dan unggah CV.")
+    elif not phone.isdigit():
+        st.warning("⚠️ Nomor telepon harus berupa angka.")
+    elif not email_valid:
+        st.warning("📧 Email harus menggunakan domain @gmail.com, @yahoo.com, atau @outlook.com.")
     else:
         # Generate folder unik untuk kandidat
         folder_id = f"{name.strip().lower().replace(' ', '_')}_{str(uuid.uuid4())[:8]}"
