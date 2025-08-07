@@ -63,6 +63,7 @@ for folder in folders:
 
         results.append({
             "Nama": data.get("nama", "-"),
+            "Gender": data.get("gender", "-"),
             "Email": data.get("email", "-"),
             "No. Telp": data.get("no_telp", "-"),
             "Domisili": data.get("domisili", "-"),

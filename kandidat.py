@@ -75,8 +75,8 @@ if submitted:
         st.success("✅ Data berhasil disimpan dan CV telah dikirim ke backend.")
 
         # Tampilkan ringkasan
-        st.markdown("### 📋 Ringkasan Data yang Dikirim")
-        st.json(data)
+        # st.markdown("### 📋 Ringkasan Data yang Dikirim")
+        # st.json(data)
 
 # --- Disclaimer ---
 st.markdown("---")
