@@ -27,6 +27,8 @@ with st.form("form_data"):
         major = st.text_input("Jurusan")
         email = st.text_input("Email")
         phone = st.text_input("No. Telepon")
+        if phone and not phone.isdigit():
+            st.warning("⚠️ Nomor telepon hanya boleh berisi angka tanpa spasi atau simbol.")
         gpa = st.number_input("GPA", min_value=0.00, max_value=4.00, step=0.01, format="%.2f")
 
     # --- Pilih Jobdesc ---
